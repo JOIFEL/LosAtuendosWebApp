@@ -1,0 +1,10 @@
+# Archivos compilados de Maven
+/target/
+
+# Metadatos del IDE NetBeans
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+.nb-gradle/
