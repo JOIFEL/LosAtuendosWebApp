@@ -15,7 +15,9 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <%-- NUEVA COLUMNA --%>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -28,9 +30,18 @@
             <tr>
                 <td><%= c.getId() %></td>
                 <td><%= c.getNombre() %></td>
+                <td><%= c.getDireccion() != null ? c.getDireccion() : "" %></td>
+                <td><%= c.getTelefono() != null ? c.getTelefono() : "" %></td>
+                <td><%= c.getMail() != null ? c.getMail() : "" %></td>
                 <td>
-                    <%-- NUEVO ENLACE: Llama al controlador con la acción y el ID específico del cliente --%>
                     <a href="controlador?accion=consultarPorCliente&clienteId=<%= c.getId() %>" class="btn btn-info btn-sm">Ver Historial</a>
+                    
+                    <%-- Botón para eliminar con confirmación --%>
+                    <a href="controlador?accion=eliminarCliente&clienteId=<%= c.getId() %>" 
+                       class="btn btn-danger btn-sm" 
+                       onclick="return confirm('¿Estás seguro de que deseas eliminar a este cliente?');">
+                       Eliminar
+                    </a>
                 </td>
             </tr>
             <%

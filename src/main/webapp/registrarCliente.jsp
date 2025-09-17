@@ -17,6 +17,21 @@
             <input type="text" class="form-control" id="nombre" name="nombre" required>
         </div>
         
+        <div class="mb-3">
+            <label for="direccion" class="form-label">Dirección</label>
+            <input type="text" class="form-control" id="direccion" name="direccion">
+        </div>
+        
+        <div class="mb-3">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" name="telefono">
+        </div>
+        
+        <div class="mb-3">
+            <label for="mail" class="form-label">Correo Electrónico</label>
+            <input type="email" class="form-control" id="mail" name="mail">
+        </div>
+        
         <button type="submit" class="btn btn-primary">Guardar Cliente</button>
         <a href="controlador?accion=verClientes" class="btn btn-secondary">Cancelar</a>
     </form>

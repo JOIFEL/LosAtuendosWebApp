@@ -1,13 +1,20 @@
 // Archivo: FachadaAlquiler.java
 package com.losatuendos.patrones.facade;
 
+import com.losatuendos.datos.ConexionDB;
 import com.losatuendos.model.*;
+import com.losatuendos.patrones.decorator.PrioridadLavadoDecorator;
 import com.losatuendos.patrones.factory.PrendaFactory;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Date;
-import java.text.SimpleDateFormat; 
+import java.util.List;
+import java.util.stream.Collectors; 
 
 public class FachadaAlquiler {
 
@@ -28,7 +35,17 @@ public class FachadaAlquiler {
 
     // --- Métodos para la aplicación web ---
     public List<Prenda> getInventario() {
-        return this.inventario;
+        List<Prenda> inventario = new ArrayList<>();
+        String sql = "SELECT * FROM prendas";
+        try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Prenda p = PrendaFactory.crearPrenda(rs.getString("tipo"), rs.getString("ref"), rs.getString("talla"), rs.getDouble("valor_alquiler"));
+                inventario.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return inventario;
     }
     
     public List<Prenda> getListaParaLavado() {
@@ -36,7 +53,16 @@ public class FachadaAlquiler {
     }
 
     public List<Cliente> getClientes() {
-        return this.clientes;
+        List<Cliente> clientes = new ArrayList<>();
+        String sql = "SELECT * FROM clientes";
+        try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                clientes.add(new Cliente(rs.getString("id"), rs.getString("nombre"), rs.getString("direccion"), rs.getString("telefono"), rs.getString("mail")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return clientes;
     }
     
     public List<Prenda> consultarPrendasPorTalla(String talla) {
@@ -63,11 +89,46 @@ public class FachadaAlquiler {
     }
     
     public List<Empleado> getEmpleados() {
-        return this.empleados;
+        List<Empleado> empleados = new ArrayList<>();
+        String sql = "SELECT * FROM empleados";
+        try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                empleados.add(new Empleado(rs.getString("id"), rs.getString("nombre"), rs.getString("direccion"), rs.getString("telefono"), rs.getString("cargo")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return empleados;
     }
 
-    public void registrarCliente(String id, String nombre, String dir, String tel, String mail) {
-        clientes.add(new Cliente(id, nombre, dir, tel, mail));
+    public boolean registrarCliente(String id, String nombre, String direccion, String telefono, String mail) {
+        String sql = "INSERT INTO clientes (id, nombre, direccion, telefono, mail) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, id);
+            pstmt.setString(2, nombre);
+            pstmt.setString(3, direccion);
+            pstmt.setString(4, telefono);
+            pstmt.setString(5, mail);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean eliminarCliente(String clienteId) {
+        String sql = "DELETE FROM clientes WHERE id = ?";
+        try (Connection conn = ConexionDB.getConnection(); 
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, clienteId);
+            return pstmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            // Este error suele ocurrir si el cliente tiene alquileres asociados (violación de clave foránea)
+            System.err.println("Error al eliminar cliente: " + e.getMessage());
+            return false;
+        }
     }
     
     public void registrarEmpleado(String id, String nombre, String dir, String tel, String cargo) {

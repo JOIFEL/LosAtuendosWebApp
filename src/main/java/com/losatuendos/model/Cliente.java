@@ -9,4 +9,8 @@ public class Cliente extends Persona {
         super(id, nombre, direccion, telefono);
         this.mail = mail;
     }
+    
+    public String getMail() {
+        return mail;
+    }
 }

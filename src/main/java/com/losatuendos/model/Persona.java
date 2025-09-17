@@ -25,4 +25,12 @@ public abstract class Persona {
     public String getNombre() {
         return nombre;
     }
+    
+    public String getDireccion() {
+        return direccion;
+    }
+    
+    public String getTelefono() {
+        return telefono;
+    }
 }

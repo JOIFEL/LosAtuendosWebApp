@@ -40,13 +40,38 @@ public class ControladorPrincipal extends HttpServlet {
             case "mostrarFormularioCliente":
                 request.getRequestDispatcher("registrarCliente.jsp").forward(request, response);
                 break;
+                
             case "registrarCliente":
                 String id = request.getParameter("id");
                 String nombre = request.getParameter("nombre");
-                fachada.registrarCliente(id, nombre, "", "", "");
-                request.getSession().setAttribute("mensaje", "¡Cliente '" + nombre + "' registrado exitosamente!");
+                String direccion = request.getParameter("direccion");
+                String telefono = request.getParameter("telefono");
+                String mail = request.getParameter("mail");
+
+                boolean exito = fachada.registrarCliente(id, nombre, direccion, telefono, mail);
+
+                if (exito) {
+                    request.getSession().setAttribute("mensaje", "¡Cliente '" + nombre + "' registrado exitosamente!");
+                } else {
+                    request.getSession().setAttribute("mensaje", "Error: No se pudo registrar el cliente. Es posible que la identificación '" + id + "' ya exista.");
+                }
+
                 response.sendRedirect("controlador?accion=verClientes");
                 break;
+            
+            case "eliminarCliente":
+                String clienteIdParaEliminar = request.getParameter("clienteId");
+                boolean borradoExitoso = fachada.eliminarCliente(clienteIdParaEliminar);
+                
+                if(borradoExitoso) {
+                    request.getSession().setAttribute("mensaje", "Cliente eliminado exitosamente.");
+                } else {
+                    request.getSession().setAttribute("mensaje", "Error: No se pudo eliminar al cliente. Es posible que tenga alquileres asociados.");
+                }
+                
+                response.sendRedirect("controlador?accion=verClientes");
+                break;
+                
             case "mostrarFormularioAlquiler":
                 request.setAttribute("listaClientes", fachada.getClientes());
                 request.setAttribute("listaPrendas", fachada.getInventario());
