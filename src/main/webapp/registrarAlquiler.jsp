@@ -11,29 +11,27 @@
     <form action="controlador" method="POST" class="mt-4">
         <input type="hidden" name="accion" value="procesarAlquiler">
         
+        <%-- ESTE BLOQUE SOLO SE MOSTRARÁ SI EL USUARIO ES ADMIN --%>
+        <%
+            List<Cliente> listaClientes = (List<Cliente>) request.getAttribute("listaClientes");
+            if (listaClientes != null) { // El controlador solo envía esta lista para los admins
+        %>
         <div class="mb-3">
-            <label for="clienteId" class="form-label">Seleccionar Cliente</label>
+            <label for="clienteId" class="form-label">Seleccionar Cliente (Admin)</label>
             <select class="form-select" id="clienteId" name="clienteId" required>
                 <option value="" disabled selected>-- Elija un cliente --</option>
-                <%-- Este código Java llena el menú desplegable con los clientes --%>
-                <%
-                    List<Cliente> clientes = (List<Cliente>) request.getAttribute("listaClientes");
-                    if (clientes != null) {
-                        for (Cliente c : clientes) {
-                %>
+                <% for (Cliente c : listaClientes) { %>
                 <option value="<%= c.getId() %>"><%= c.getNombre() %></option>
-                <%
-                        }
-                    }
-                %>
+                <% } %>
             </select>
         </div>
+        <% } %>
         
+        <%-- Estos campos son para ambos roles --%>
         <div class="mb-3">
             <label for="prendaRef" class="form-label">Seleccionar Prenda</label>
             <select class="form-select" id="prendaRef" name="prendaRef" required>
                 <option value="" disabled selected>-- Elija una prenda --</option>
-                <%-- Este código Java llena el menú desplegable con las prendas --%>
                 <%
                     List<Prenda> prendas = (List<Prenda>) request.getAttribute("listaPrendas");
                     if (prendas != null) {

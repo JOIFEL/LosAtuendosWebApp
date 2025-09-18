@@ -102,18 +102,36 @@ public class FachadaAlquiler {
     }
 
     public boolean registrarCliente(String id, String nombre, String direccion, String telefono, String mail) {
-        String sql = "INSERT INTO clientes (id, nombre, direccion, telefono, mail) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, id);
-            pstmt.setString(2, nombre);
-            pstmt.setString(3, direccion);
-            pstmt.setString(4, telefono);
-            pstmt.setString(5, mail);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+    // Primero, intentamos guardar el cliente
+    String sqlCliente = "INSERT INTO clientes (id, nombre, direccion, telefono, mail) VALUES (?, ?, ?, ?, ?)";
+    try (Connection conn = ConexionDB.getConnection();
+         PreparedStatement pstmtCliente = conn.prepareStatement(sqlCliente)) {
+        
+        pstmtCliente.setString(1, id);
+        pstmtCliente.setString(2, nombre);
+        pstmtCliente.setString(3, direccion);
+        pstmtCliente.setString(4, telefono);
+        pstmtCliente.setString(5, mail);
+        
+        int filasAfectadas = pstmtCliente.executeUpdate();
+        if (filasAfectadas > 0) {
+            // SI EL CLIENTE SE GUARDÓ BIEN, AHORA CREAMOS SU USUARIO
+            String sqlUsuario = "INSERT INTO usuarios (username, password, rol, cliente_id) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pstmtUsuario = conn.prepareStatement(sqlUsuario)) {
+                // Por simplicidad, el username será el email y la contraseña será el número de ID.
+                // En una app real, se le pediría al usuario crear su propia contraseña.
+                pstmtUsuario.setString(1, mail); // Usamos el email como nombre de usuario
+                pstmtUsuario.setString(2, id);   // Usamos el ID como contraseña inicial
+                pstmtUsuario.setString(3, "CLIENTE");
+                pstmtUsuario.setString(4, id);
+                pstmtUsuario.executeUpdate();
+            }
+            return true; // Éxito en ambos pasos
         }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false; // Si algo falla, devuelve false
     }
     
     public boolean eliminarCliente(String clienteId) {
@@ -129,6 +147,45 @@ public class FachadaAlquiler {
             System.err.println("Error al eliminar cliente: " + e.getMessage());
             return false;
         }
+    }
+    
+     public Usuario validarLogin(String username, String password) {
+        // --- PISTAS DE DEPURACIÓN ---
+        System.out.println("--- INTENTO DE LOGIN ---");
+        System.out.println("Usuario recibido por la fachada: [" + username + "]");
+        System.out.println("Contraseña recibida por la fachada: [" + password + "]");
+        // -------------------------
+
+        Usuario usuarioEncontrado = null;
+        String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
+        
+        try (Connection conn = ConexionDB.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, username.trim()); // Añadimos .trim() por si hay espacios extra
+            pstmt.setString(2, password.trim());
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    // Si encontramos un usuario, creamos el objeto
+                    System.out.println(">>> ÉXITO: Se encontró un usuario en la BD.");
+                    usuarioEncontrado = new Usuario(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("rol"),
+                        rs.getString("cliente_id")
+                    );
+                } else {
+                    System.out.println("!!! FALLO: La consulta SQL no devolvió ningún resultado.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("!!! ERROR SQL al intentar validar el login: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        System.out.println("--- FIN DEL INTENTO DE LOGIN ---");
+        return usuarioEncontrado;
     }
     
     public void registrarEmpleado(String id, String nombre, String dir, String tel, String cargo) {

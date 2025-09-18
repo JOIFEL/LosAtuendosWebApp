@@ -1,9 +1,9 @@
-// Archivo: DatabaseInitializerListener.java
+// Archivo: DatabaseInitializerListener.java (Versión Definitiva)
 package com.losatuendos.web.util;
 
-import com.losatuendos.datos.ConexionDB;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
@@ -14,45 +14,54 @@ import jakarta.servlet.annotation.WebListener;
 @WebListener
 public class DatabaseInitializerListener implements ServletContextListener {
 
+    // URL para conectar al SERVIDOR MySQL, SIN especificar una base de datos.
+    private static final String SERVER_URL = "jdbc:mysql://localhost:3308/?useSSL=false&serverTimezone=UTC";
+    private static final String USUARIO = "root";
+    private static final String CONTRASENA = "";
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        System.out.println(">>> INICIANDO APLICACIÓN: Verificando base de datos...");
+        System.out.println(">>> INICIANDO APLICACIÓN: Ejecutando script de inicialización de BD...");
+        
         try {
-            // Leemos nuestro archivo .sql desde los recursos del proyecto
+            // Registramos el driver una sola vez
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("!!! ERROR CRÍTICO: Driver de MySQL no encontrado. Revisa la dependencia en pom.xml y la librería en Tomcat.");
+            e.printStackTrace();
+            return;
+        }
+
+        // Usamos try-with-resources para asegurar que la conexión y el statement se cierren
+        try (Connection conn = DriverManager.getConnection(SERVER_URL, USUARIO, CONTRASENA);
+             Statement stmt = conn.createStatement()) {
+
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("db/init.sql");
             if (inputStream == null) {
-                System.err.println("!!! ERROR: No se pudo encontrar el archivo db/init.sql");
+                System.err.println("!!! ERROR: No se pudo encontrar el archivo db/init.sql en src/main/resources/db");
                 return;
             }
             
-            // Usamos un Scanner para leer el contenido del archivo
-            Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
-            String sqlScript = scanner.hasNext() ? scanner.next() : "";
-            
-            // Dividimos el script en comandos individuales usando el punto y coma como separador
-            String[] commands = sqlScript.split(";\\s*");
+            // Leemos el script completo y lo ejecutamos.
+            // El propio script contiene "CREATE DATABASE..." y "USE..."
+            Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter(";\\s*");
 
-            // Obtenemos una conexión y ejecutamos cada comando
-            try (Connection conn = ConexionDB.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                
-                for (String command : commands) {
-                    if (command.trim().length() > 0) {
-                        System.out.println("   Ejecutando: " + command.substring(0, Math.min(command.length(), 50)) + "...");
-                        stmt.execute(command);
-                    }
+            while(scanner.hasNext()){
+                String command = scanner.next().trim();
+                 if (!command.isEmpty()) {
+                    System.out.println("   Ejecutando SQL: " + command.substring(0, Math.min(command.length(), 70)) + "...");
+                    stmt.execute(command);
                 }
-                System.out.println(">>> Base de datos verificada e inicializada correctamente.");
             }
             
-        } catch (SQLException e) {
-            System.err.println("!!! ERROR al ejecutar el script de inicialización de la base de datos.");
+            System.out.println(">>> ÉXITO: Script de base de datos ejecutado correctamente.");
+            
+        } catch (Exception e) {
+            System.err.println("!!! ERROR al ejecutar el script de inicialización.");
             e.printStackTrace();
         }
     }
-
+    
     @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        // Este método se ejecuta cuando la aplicación se detiene. No necesitamos hacer nada aquí.
-    }
+    public void contextDestroyed(ServletContextEvent sce) {}
 }

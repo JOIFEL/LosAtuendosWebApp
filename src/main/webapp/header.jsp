@@ -1,5 +1,10 @@
 <%-- Archivo: header.jsp --%>
+<%@page import="com.losatuendos.model.Usuario"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%-- Obtenemos el objeto Usuario de la sesión. Si no hay sesión, será null. --%>
+<%
+    Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+%>
 <!DOCTYPE html>
 <html lang="es">
     <head>
@@ -17,37 +22,63 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAlquiler" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Alquileres
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownAlquiler">
-                            <li><a class="dropdown-item" href="controlador?accion=mostrarFormularioAlquiler">Registrar Nuevo Alquiler</a></li>
-                            <li><a class="dropdown-item" href="controlador?accion=mostrarConsultas">Consultar Alquileres</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="controlador?accion=mostrarFormularioAlquiler">Registrar Alquiler</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="controlador?accion=verInventario">Inventario</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="controlador?accion=verEmpleados">Empleados</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="controlador?accion=verClientes">Clientes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="controlador?accion=mostrarGestionLavanderia">Lavandería</a>
-                    </li>
-                </ul>
+                <%-- El menú principal solo se muestra si el usuario ha iniciado sesión --%>
+                <% if (usuarioLogueado != null) { %>
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.jsp">Inicio</a>
+                        </li>
+
+                        <%-- MENÚ PARA ADMINISTRADORES --%>
+                        <% if (usuarioLogueado.getRol().equals("ADMIN")) { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="controlador?accion=verInventario">Inventario</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="controlador?accion=verClientes">Clientes</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="controlador?accion=verEmpleados">Empleados</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="controlador?accion=mostrarGestionLavanderia">Lavandería</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAlquiler" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Alquileres
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdownAlquiler">
+                                    <li><a class="dropdown-item" href="controlador?accion=mostrarFormularioAlquiler">Registrar Nuevo Alquiler</a></li>
+                                    <li><a class="dropdown-item" href="controlador?accion=mostrarConsultas">Consultar Alquileres</a></li>
+                                </ul>
+                            </li>
+                        <% } %>
+
+                        <%-- MENÚ PARA CLIENTES --%>
+                        <% if (usuarioLogueado.getRol().equals("CLIENTE")) { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="controlador?accion=verMisAlquileres">Mis Alquileres</a>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" href="controlador?accion=mostrarFormularioAlquiler">Registrar Nuevo Alquiler</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Mis Datos Personales</a>
+                            </li>
+                        <% } %>
+                    </ul>
+
+                    <%-- Muestra el nombre del usuario y el botón de cerrar sesión --%>
+                    <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            Bienvenido, <%= usuarioLogueado.getUsername() %>
+                        </span>
+                        <a href="controlador?accion=logout" class="btn btn-outline-light">Cerrar Sesión</a>
+                    </div>
+                <% } %>
             </div>
         </div>
     </nav>
 
-    <%-- NUEVO: Bloque para mostrar mensajes de confirmación --%>
+    <%-- Bloque para mostrar mensajes de confirmación --%>
     <% 
         String mensaje = (String) session.getAttribute("mensaje");
         if (mensaje != null) { 
@@ -59,6 +90,6 @@
         </div>
     </div>
     <% 
-        session.removeAttribute("mensaje"); // Limpiamos el mensaje para que no se muestre de nuevo
+        session.removeAttribute("mensaje");
         } 
     %>
