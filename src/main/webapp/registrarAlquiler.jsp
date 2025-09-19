@@ -1,4 +1,5 @@
 <%-- Archivo: registrarAlquiler.jsp --%>
+<%@page import="com.losatuendos.model.Empleado"%>
 <%@page import="com.losatuendos.model.Prenda"%>
 <%@page import="com.losatuendos.model.Cliente"%>
 <%@page import="java.util.List"%>
@@ -25,6 +26,24 @@
                 <% } %>
             </select>
         </div>
+            
+        <div class="mb-3">
+            <label for="empleadoId" class="form-label">Empleado que Atiende (Admin)</label>
+            <select class="form-select" id="empleadoId" name="empleadoId" required>
+                <option value="" disabled selected>-- Elija un empleado --</option>
+                <%
+                    List<Empleado> listaEmpleados = (List<Empleado>) request.getAttribute("listaEmpleados");
+                    if (listaEmpleados != null) {
+                        for (Empleado e : listaEmpleados) {
+                %>
+                <option value="<%= e.getId() %>"><%= e.getNombre() %></option>
+                <%
+                        }
+                    }
+                %>
+            </select>
+        </div>
+            
         <% } %>
         
         <%-- Estos campos son para ambos roles --%>

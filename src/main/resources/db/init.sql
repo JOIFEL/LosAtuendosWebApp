@@ -24,8 +24,16 @@ CREATE TABLE IF NOT EXISTS prendas (
   ref VARCHAR(20) PRIMARY KEY,
   tipo VARCHAR(50) NOT NULL,
   descripcion VARCHAR(255) NOT NULL,
+  color VARCHAR(50),
+  marca VARCHAR(50),
   talla VARCHAR(10),
-  valor_alquiler DOUBLE NOT NULL
+  valor_alquiler DOUBLE NOT NULL,
+  -- Atributos específicos (pueden ser NULL)
+  pedreria BOOLEAN,
+  altura VARCHAR(20),
+  cant_piezas INT,
+  aderezo VARCHAR(50),
+  nombre_disfraz VARCHAR(100)
 );
 
 -- Creación de la tabla de usuarios
@@ -48,6 +56,14 @@ CREATE TABLE IF NOT EXISTS alquileres (
   FOREIGN KEY (cliente_id) REFERENCES clientes(id),
   FOREIGN KEY (empleado_id) REFERENCES empleados(id),
   FOREIGN KEY (prenda_ref) REFERENCES prendas(ref)
+);
+
+CREATE TABLE IF NOT EXISTS lavanderia (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  prenda_ref VARCHAR(20) NOT NULL,
+  fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  es_prioritario BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (prenda_ref) REFERENCES prendas(ref) ON DELETE CASCADE
 );
 
 -- Datos de prueba solo si las tablas están vacías

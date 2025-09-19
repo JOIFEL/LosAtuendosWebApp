@@ -1,39 +1,21 @@
-// Archivo: TrajeCaballero.java
 package com.losatuendos.model;
 
-/**
- * Representa un traje de caballero.
- * Contiene atributos propios como el tipo de traje y el aderezo que lo acompaña.
- */
 public class TrajeCaballero extends Prenda {
+    private String tipo;
+    private String aderezo;
 
-    private String tipo;      // E.g., "Frac", "Sacoleva", "Convencional"
-    private String aderezo;   // E.g., "Corbata", "Corbatín", "Plastrón"
-
-    /**
-     * Constructor para crear una nueva instancia de TrajeCaballero.
-     */
-    public TrajeCaballero(String ref, String talla, double valorAlquiler, String aderezo) {
-        // Llama al constructor de la clase padre (Prenda) para inicializar los atributos comunes.
-        super(ref, talla, valorAlquiler);
-        this.tipo = "Convencional"; // Asignamos un valor por defecto
+    public TrajeCaballero(String color, String marca, String talla, double valor, String tipo, String aderezo) {
+        super(color, marca, talla, valor);
+        this.tipo = tipo;
         this.aderezo = aderezo;
     }
 
-    /**
-     * Sobrescribe el método de la clase padre para devolver el valor del alquiler.
-     * En el futuro, podría incluir lógica adicional (ej: cobrar extra por un tipo de traje).
-     */
-    @Override
-    public double getValorAlquiler() {
-        return this.valorAlquiler;
-    }
+    // Getters para sus atributos específicos
+    public String getTipo() { return tipo; }
+    public String getAderezo() { return aderezo; }
 
-    /**
-     * Sobrescribe el método para proporcionar una descripción detallada de esta prenda.
-     */
     @Override
     public String getDescripcion() {
-        return "Traje de Caballero (Ref: " + this.ref + ", Talla: " + this.talla + ", Aderezo: " + this.aderezo + ")";
+        return "Traje de Caballero " + marca + " (Ref: " + this.ref + ")";
     }
 }

@@ -33,6 +33,15 @@
     <main>
         <div class="card login-card">
             <div class="card-body p-4 p-sm-5">
+                
+                <h5 class="card-title text-center">Iniciar Sesión</h5>
+
+                <%-- Bloque para mostrar el mensaje de registro exitoso --%>
+                <% String registroMsg = (String) request.getAttribute("mensajeRegistro");
+                   if (registroMsg != null) { %>
+                    <div class="alert alert-success"><%= registroMsg %></div>
+                <% } %>
+                
                 <div class="text-center mb-4">
                     <i class="bi bi-hanger login-icon"></i>
                     <h1 class="h3 mt-2 mb-3 fw-normal">Los Atuendos</h1>

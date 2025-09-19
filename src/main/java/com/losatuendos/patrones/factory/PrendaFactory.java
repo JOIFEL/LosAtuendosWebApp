@@ -3,21 +3,20 @@ package com.losatuendos.patrones.factory;
 
 import com.losatuendos.model.*;
 
-// Patrón Factory Method: Centraliza la creación de objetos.
 public class PrendaFactory {
 
-    // Un único método estático que decide qué objeto crear.
-    public static Prenda crearPrenda(String tipo, String ref, String talla, double valor) {
+    // CORRECCIÓN: El método ahora acepta los nuevos parámetros y los pasa
+    // a los constructores correctos.
+    public static Prenda crearPrenda(String tipo, String color, String marca, String talla, double valor) {
         switch (tipo.toLowerCase()) {
             case "vestido":
-                // Podríamos pedir más datos para la pedrería, pero lo simplificamos.
-                return new VestidoDama(ref, talla, valor, false);
+                // Creamos con valores por defecto para los atributos específicos.
+                return new VestidoDama(color, marca, talla, valor, false, "N/A", 1);
             case "traje":
-                return new TrajeCaballero(ref, talla, valor, "Corbata");
+                return new TrajeCaballero(color, marca, talla, valor, "Convencional", "Corbata");
             case "disfraz":
-                return new Disfraz(ref, talla, valor, "Superhéroe");
+                return new Disfraz(color, marca, talla, valor, "Genérico");
             default:
-                // Si el tipo no es válido, lanzamos un error.
                 throw new IllegalArgumentException("Tipo de prenda desconocido: " + tipo);
         }
     }

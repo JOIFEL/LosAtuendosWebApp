@@ -1,4 +1,4 @@
-<%-- Archivo: inventario.jsp (Versión Corregida) --%>
+<%-- Archivo: inventario.jsp --%>
 <%@page import="java.util.List"%>
 <%@page import="com.losatuendos.model.Prenda"%>
 
@@ -7,13 +7,11 @@
 <main class="container mt-4">
     <div class="d-flex justify-content-between align-items-center">
         <h1>
-            <%-- Título dinámico: cambia si es una búsqueda o la lista completa --%>
             <% 
                 String terminoBusqueda = (String) request.getAttribute("terminoBusqueda");
                 if (terminoBusqueda != null && !terminoBusqueda.isEmpty()) { 
             %>
                 Resultados para la talla: <b><%= terminoBusqueda %></b>
-                <%-- Enlace para limpiar la búsqueda y volver a ver todo el inventario --%>
                 <a href="controlador?accion=verInventario" class="btn btn-sm btn-outline-secondary ms-2">Ver todos</a>
             <% } else { %>
                 Inventario Disponible
@@ -39,12 +37,13 @@
                 <th>Descripción</th>
                 <th>Talla</th>
                 <th>Valor Alquiler</th>
+                <th>Acciones</th> <%-- NUEVA COLUMNA --%>
             </tr>
         </thead>
         <tbody>
             <%
                 List<Prenda> prendas = (List<Prenda>) request.getAttribute("listaPrendas");
-                if (prendas != null) {
+                if (prendas != null && !prendas.isEmpty()) {
                     for (Prenda p : prendas) {
             %>
             <tr>
@@ -52,9 +51,23 @@
                 <td><%= p.getDescripcion() %></td>
                 <td><%= p.getTalla() %></td>
                 <td>$<%= String.format("%.0f", p.getValorAlquiler()) %></td>
+                <td>
+                    <%-- NUEVO: Botón para eliminar con confirmación --%>
+                    <a href="controlador?accion=eliminarPrenda&prendaRef=<%= p.getRef() %>" 
+                       class="btn btn-danger btn-sm" 
+                       onclick="return confirm('¿Estás seguro de que deseas eliminar esta prenda? El cambio es permanente.');">
+                       Eliminar
+                    </a>
+                </td>
             </tr>
             <%
                     }
+                } else {
+            %>
+            <tr>
+                <td colspan="5" class="text-center">No se encontraron prendas.</td>
+            </tr>
+            <%
                 }
             %>
         </tbody>

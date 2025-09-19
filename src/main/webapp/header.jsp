@@ -1,8 +1,8 @@
 <%-- Archivo: header.jsp --%>
 <%@page import="com.losatuendos.model.Usuario"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%-- Obtenemos el objeto Usuario de la sesión. Si no hay sesión, será null. --%>
 <%
+    // Obtenemos el objeto Usuario de la sesión. Si no hay sesión, será null.
     Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
 %>
 <!DOCTYPE html>
@@ -22,7 +22,6 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <%-- El menú principal solo se muestra si el usuario ha iniciado sesión --%>
                 <% if (usuarioLogueado != null) { %>
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
@@ -43,13 +42,14 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="controlador?accion=mostrarGestionLavanderia">Lavandería</a>
                             </li>
+                            <%-- Menú desplegable para Alquileres de Admin --%>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAlquiler" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Alquileres
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownAlquiler">
-                                    <li><a class="dropdown-item" href="controlador?accion=mostrarFormularioAlquiler">Registrar Nuevo Alquiler</a></li>
-                                    <li><a class="dropdown-item" href="controlador?accion=mostrarConsultas">Consultar Alquileres</a></li>
+                                    <li><a class="dropdown-item" href="controlador?accion=mostrarFormularioAlquiler">Registrar Alquiler (Admin)</a></li>
+                                    <li><a class="dropdown-item" href="controlador?accion=mostrarPanelBusqueda">Consultar Alquileres</a></li>
                                 </ul>
                             </li>
                         <% } %>
@@ -59,9 +59,11 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="controlador?accion=verMisAlquileres">Mis Alquileres</a>
                             </li>
-                            <li class="nav-item"><a class="nav-link" href="controlador?accion=mostrarFormularioAlquiler">Registrar Nuevo Alquiler</a></li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Mis Datos Personales</a>
+                                <a class="nav-link" href="controlador?accion=mostrarFormularioAlquiler">Registrar Nuevo Alquiler</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="controlador?accion=mostrarMisDatos">Mis Datos Personales</a>
                             </li>
                         <% } %>
                     </ul>
@@ -78,7 +80,7 @@
         </div>
     </nav>
 
-    <%-- Bloque para mostrar mensajes de confirmación --%>
+    <%-- Bloque para mostrar mensajes de confirmación (SE MANTIENE IGUAL) --%>
     <% 
         String mensaje = (String) session.getAttribute("mensaje");
         if (mensaje != null) { 

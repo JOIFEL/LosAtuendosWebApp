@@ -23,6 +23,14 @@ public class ServicioAlquiler {
         this.fechaAlquiler = fechaAlquiler;
         this.fechaSolicitud = new Date(); // La fecha de solicitud siempre es la actual
     }
+    
+    public void setFechaSolicitud(Date fechaSolicitud) {
+    this.fechaSolicitud = fechaSolicitud;
+    }
+    
+    public Empleado getEmpleado() {
+        return empleado;
+    }
 
     // --- Getters que necesitaremos ---
     public int getNumero() { return numero; }

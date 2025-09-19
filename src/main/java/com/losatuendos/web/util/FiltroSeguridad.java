@@ -1,6 +1,7 @@
-// Archivo: FiltroSeguridad.java (Versión Corregida)
+// Archivo: FiltroSeguridad.java
 package com.losatuendos.web.util;
 
+import com.losatuendos.model.Usuario;
 import java.io.IOException;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -30,17 +31,17 @@ public class FiltroSeguridad implements Filter {
         // ¿El usuario tiene una sesión iniciada?
         boolean loggedIn = (session != null && session.getAttribute("usuarioLogueado") != null);
         
-        // ¿Está intentando acceder a la página de login?
+        // Reglas para permitir el acceso a usuarios SIN sesión:
         boolean loginPageRequest = requestURI.endsWith("login.jsp");
-        
-        // ¿Está intentando procesar un login?
         boolean loginActionRequest = "login".equals(accion);
-        
-        // NUEVO: ¿Está intentando acceder a la página de diagnóstico?
         boolean diagnosticoRequest = "diagnostico".equals(accion);
+        
+        // NUEVAS REGLAS: Permitir el acceso al formulario de registro y a la acción de registrar
+        boolean showRegisterFormRequest = "mostrarFormularioCliente".equals(accion);
+        boolean processRegisterRequest = "registrarCliente".equals(accion);
 
-        // Si el usuario ya inició sesión, O va a la página de login, O intenta loguearse, O va a la página de diagnóstico...
-        if (loggedIn || loginPageRequest || loginActionRequest || diagnosticoRequest) {
+        // Si el usuario ya inició sesión, O si está intentando acceder a una de las páginas/acciones permitidas...
+        if (loggedIn || loginPageRequest || loginActionRequest || diagnosticoRequest || showRegisterFormRequest || processRegisterRequest) {
             // ...entonces déjalo pasar.
             chain.doFilter(request, response);
         } else {

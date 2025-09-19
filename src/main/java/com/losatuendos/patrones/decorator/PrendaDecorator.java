@@ -3,14 +3,12 @@ package com.losatuendos.patrones.decorator;
 
 import com.losatuendos.model.Prenda;
 
-// El decorador abstracto "envuelve" una Prenda.
 public abstract class PrendaDecorator extends Prenda {
     protected Prenda prendaDecorada;
 
     public PrendaDecorator(Prenda prendaDecorada) {
-        // El constructor del decorador no necesita los atributos base,
-        // ya que los delega a la prenda envuelta.
-        super(prendaDecorada.getRef(), prendaDecorada.getTalla(), 0);
+        
+        super(prendaDecorada.getColor(), prendaDecorada.getMarca(), prendaDecorada.getTalla(), prendaDecorada.getValorAlquiler());
         this.prendaDecorada = prendaDecorada;
     }
 
