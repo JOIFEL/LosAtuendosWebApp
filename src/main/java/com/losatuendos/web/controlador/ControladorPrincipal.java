@@ -122,21 +122,31 @@ public class ControladorPrincipal extends HttpServlet {
                 break;
 
             case "registrarCliente":
-                String id = request.getParameter("id");
-                String nombre = request.getParameter("nombre");
+                // 1. Obtenemos los datos del formulario
+                String idClienteForm = request.getParameter("id");
+                String nombreCliente = request.getParameter("nombre");
                 String direccion = request.getParameter("direccion");
                 String telefono = request.getParameter("telefono");
                 String mail = request.getParameter("mail");
-
-                boolean exitoCliente = fachada.registrarCliente(id, nombre, direccion, telefono, mail);
-
+                
+                // 2. Intentamos registrar al cliente
+                boolean exitoCliente = fachada.registrarCliente(idClienteForm, nombreCliente, direccion, telefono, mail);
+                
+                // 3. Decidimos a dónde ir basándonos en quién hizo la acción
                 if (exitoCliente) {
-                    // Preparamos un mensaje específico para la página de login
-                    request.setAttribute("mensajeRegistro", "¡Te has registrado exitosamente! Ahora puedes iniciar sesión con tu correo y tu ID.");
-                    // Lo enviamos al login para que se muestre el mensaje
-                    request.getRequestDispatcher("login.jsp").forward(request, response);
+                    // Verificamos si hay un administrador logueado
+                    Usuario usuarioActual = (Usuario) request.getSession().getAttribute("usuarioLogueado");
+                    if (usuarioActual != null && usuarioActual.getRol().equals("ADMIN")) {
+                        // Si es un admin, lo mantenemos en el panel de gestión
+                        request.getSession().setAttribute("mensaje", "¡Cliente '" + nombreCliente + "' registrado exitosamente!");
+                        response.sendRedirect("controlador?accion=verClientes");
+                    } else {
+                        // Si no hay nadie logueado, es un cliente nuevo, lo mandamos al login
+                        request.setAttribute("mensajeRegistro", "¡Te has registrado exitosamente! Ahora puedes iniciar sesión.");
+                        request.getRequestDispatcher("login.jsp").forward(request, response);
+                    }
                 } else {
-                    // Si falla, lo devolvemos al formulario de registro con un error
+                    // Si el registro falla, lo devolvemos al formulario con un error
                     request.setAttribute("errorRegistro", "Error: No se pudo registrar. La identificación o el correo ya podrían existir.");
                     request.getRequestDispatcher("registrarCliente.jsp").forward(request, response);
                 }
@@ -272,22 +282,16 @@ public class ControladorPrincipal extends HttpServlet {
             
             case "procesarAlquiler":
                 String idClienteAlquiler;
-                // NUEVO: Obtenemos el id del empleado. Será null si es un cliente quien registra.
-                String idEmpleadoSeleccionado = request.getParameter("empleadoId");
+                String idEmpleadoSeleccionado = request.getParameter("empleadoId"); // Será null si es un cliente
                 
                 if (usuarioLogueado != null && usuarioLogueado.getRol().equals("ADMIN")) {
                     idClienteAlquiler = request.getParameter("clienteId");
                 } else {
                     idClienteAlquiler = (usuarioLogueado != null) ? usuarioLogueado.getClienteId() : null;
-                    // Si es un cliente, asignamos un empleado por defecto desde la fachada.
-                    if(!fachada.getEmpleados().isEmpty()){
-                       idEmpleado = fachada.getEmpleados().get(0).getId();
-                    }
                 }
                 
-                if (idClienteAlquiler == null || idEmpleadoSeleccionado == null) {
-                    request.getSession().setAttribute("mensaje", "Error: No se pudo procesar el alquiler. Faltan datos de cliente o empleado.");
-                    response.sendRedirect("index.jsp");
+                if (idClienteAlquiler == null) {
+                    response.sendRedirect("login.jsp");
                     return;
                 }
 
@@ -296,7 +300,7 @@ public class ControladorPrincipal extends HttpServlet {
                     String fechaStr = request.getParameter("fechaAlquiler");
                     Date fechaAlquiler = new SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
                     
-                    // CORRECCIÓN: Pasamos el idEmpleado al método de la fachada
+                    // Llamamos a la fachada. Ella se encargará de la lógica del empleado.
                     String resultado = fachada.realizarAlquiler(idClienteAlquiler, idEmpleadoSeleccionado, refPrenda, fechaAlquiler);
                     
                     request.getSession().setAttribute("mensaje", resultado);
