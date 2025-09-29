@@ -451,47 +451,57 @@ public class FachadaAlquiler {
     }
 
     public String realizarAlquiler(String idCliente, String idEmpleado, String refPrenda, Date fechaAlquiler) {
-        // La lógica de verificación de disponibilidad de la prenda se mantiene igual...
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaBuscada = sdf.format(fechaAlquiler);
-        String sqlCheck = "SELECT COUNT(*) FROM alquileres WHERE prenda_ref = ? AND fecha_alquiler = ?";
-        try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmtCheck = conn.prepareStatement(sqlCheck)) {
-            pstmtCheck.setString(1, refPrenda);
-            pstmtCheck.setString(2, fechaBuscada);
-            ResultSet rs = pstmtCheck.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                return "Error: La prenda " + refPrenda + " ya se encuentra alquilada para la fecha seleccionada.";
-            }
+    // La lógica de verificación de disponibilidad de la prenda se mantiene igual...
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    String fechaBuscada = sdf.format(fechaAlquiler);
+    String sqlCheck = "SELECT COUNT(*) FROM alquileres WHERE prenda_ref = ? AND fecha_alquiler = ?";
+    try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmtCheck = conn.prepareStatement(sqlCheck)) {
+        pstmtCheck.setString(1, refPrenda);
+        pstmtCheck.setString(2, fechaBuscada);
+        ResultSet rs = pstmtCheck.executeQuery();
+        if (rs.next() && rs.getInt(1) > 0) {
+            return "Error: La prenda " + refPrenda + " ya se encuentra alquilada para la fecha seleccionada.";
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return "Error al verificar disponibilidad.";
+    }
+
+    // Buscamos las entidades necesarias
+    Cliente cliente = buscarCliente(idCliente);
+    Prenda prenda = buscarPrenda(refPrenda);
+    Empleado empleadoAsignado;
+
+    // Si viene un ID de empleado (desde el admin), lo buscamos.
+    if (idEmpleado != null && !idEmpleado.isEmpty()) {
+        empleadoAsignado = buscarEmpleado(idEmpleado);
+    } else {
+        // Si no viene un ID de empleado (desde el cliente), asignamos uno por defecto.
+        List<Empleado> empleadosDisponibles = getEmpleados();
+        if (empleadosDisponibles.isEmpty()) {
+            return "Error: No hay empleados registrados en el sistema para procesar el alquiler.";
+        }
+        empleadoAsignado = empleadosDisponibles.get(0);
+    }
+    
+    // Verificamos que todas las entidades existan
+    if (cliente != null && prenda != null && empleadoAsignado != null) {
+        String sqlInsert = "INSERT INTO alquileres (fecha_solicitud, fecha_alquiler, cliente_id, empleado_id, prenda_ref) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmtInsert = conn.prepareStatement(sqlInsert)) {
+            pstmtInsert.setTimestamp(1, new Timestamp(new Date().getTime()));
+            pstmtInsert.setDate(2, new java.sql.Date(fechaAlquiler.getTime()));
+            pstmtInsert.setString(3, idCliente);
+            pstmtInsert.setString(4, empleadoAsignado.getId());
+            pstmtInsert.setString(5, refPrenda);
+            pstmtInsert.executeUpdate();
+            return "¡Alquiler registrado exitosamente para el día " + fechaBuscada + "!";
         } catch (SQLException e) {
             e.printStackTrace();
-            return "Error al verificar disponibilidad.";
+            return "Error al registrar el alquiler.";
         }
-
-        // Buscamos todas las entidades necesarias
-        Cliente cliente = buscarCliente(idCliente);
-        Prenda prenda = buscarPrenda(refPrenda);
-        // Buscamos al empleado específico que viene como parámetro
-        Empleado empleadoAsignado = buscarEmpleado(idEmpleado);
-        
-        // Verificamos que todas las entidades existan
-        if (cliente != null && prenda != null && empleadoAsignado != null) {
-            String sqlInsert = "INSERT INTO alquileres (fecha_solicitud, fecha_alquiler, cliente_id, empleado_id, prenda_ref) VALUES (?, ?, ?, ?, ?)";
-            try (Connection conn = ConexionDB.getConnection(); PreparedStatement pstmtInsert = conn.prepareStatement(sqlInsert)) {
-                pstmtInsert.setTimestamp(1, new Timestamp(new Date().getTime()));
-                pstmtInsert.setDate(2, new java.sql.Date(fechaAlquiler.getTime()));
-                pstmtInsert.setString(3, idCliente);
-                pstmtInsert.setString(4, empleadoAsignado.getId()); // Guardamos el ID del empleado seleccionado
-                pstmtInsert.setString(5, refPrenda);
-                pstmtInsert.executeUpdate();
-                return "¡Alquiler registrado exitosamente para el día " + fechaBuscada + "!";
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return "Error al registrar el alquiler.";
-            }
-        } else {
-            // Damos un error más específico si algo no se encontró
-            return "Error: No se pudo encontrar el cliente, la prenda o el empleado especificado.";
-        }
+    } else {
+        return "Error: No se pudo encontrar el cliente, la prenda o el empleado especificado.";
+    }
     }
     
     public Cliente buscarCliente(String clienteId) {
