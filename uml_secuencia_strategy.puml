@@ -1,0 +1,8 @@
+@startuml
+' Diagrama de Secuencia: Strategy (Recomendación de prendas)
+actor Usuario
+Usuario -> ServicioAlquiler: recomendarPrendas(prendas)
+ServicioAlquiler -> RecomendacionStrategy: recomendar(prendas)
+RecomendacionStrategy --> ServicioAlquiler: List<Prenda>
+ServicioAlquiler --> Usuario: List<Prenda>
+@enduml

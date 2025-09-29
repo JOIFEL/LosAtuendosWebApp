@@ -1,0 +1,8 @@
+@startuml
+' Diagrama de Secuencia: Observer (Cambio de estado de prenda)
+actor Usuario
+Usuario -> Prenda: setEstado(estado)
+Prenda -> Prenda: notifyObservers()
+Prenda -> Observer1: update(this)
+Prenda -> Observer2: update(this)
+@enduml
