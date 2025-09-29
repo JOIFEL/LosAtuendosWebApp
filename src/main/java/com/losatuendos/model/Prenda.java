@@ -1,7 +1,13 @@
 // Archivo: Prenda.java
+
 package com.losatuendos.model;
 
+import com.losatuendos.model.patrones.Observer;
+import java.util.List;
+import java.util.ArrayList;
+
 public abstract class Prenda {
+    protected String estado;
     // El 'ref' se asignará en la base de datos
     protected String ref;
     protected String color;
@@ -27,4 +33,27 @@ public abstract class Prenda {
     public void setRef(String ref) { this.ref = ref; }
 
     public abstract String getDescripcion();
+    
+        // Observer pattern
+        private List<Observer> observers = new ArrayList<>();
+
+        public void addObserver(Observer observer) {
+            observers.add(observer);
+        }
+
+        public void notifyObservers() {
+            for (Observer observer : observers) {
+                observer.update(this);
+            }
+        }
+
+        public void setEstado(String estado) {
+            this.estado = estado;
+            notifyObservers();
+        }
+
+        public String getEstado() {
+            return estado;
+        }
+        // ...otros getters y setters...
 }

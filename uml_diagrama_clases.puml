@@ -1,0 +1,39 @@
+@startuml
+' Diagrama de Clases con patrones Strategy y Observer
+
+interface RecomendacionStrategy {
+    +recomendar(prendas: List<Prenda>): List<Prenda>
+}
+
+class RecomendacionPorClima implements RecomendacionStrategy {
+    +recomendar(prendas: List<Prenda>): List<Prenda>
+}
+
+class RecomendacionPorOcasión implements RecomendacionStrategy {
+    +recomendar(prendas: List<Prenda>): List<Prenda>
+}
+
+class ServicioAlquiler {
+    -estrategia: RecomendacionStrategy
+    +setEstrategia(e: RecomendacionStrategy)
+    +recomendarPrendas(prendas: List<Prenda>): List<Prenda>
+}
+
+interface Observer {
+    +update(p: Prenda)
+}
+
+abstract class Prenda {
+    -estado: String
+    -observers: List<Observer>
+    +addObserver(o: Observer)
+    +notifyObservers()
+    +setEstado(estado: String)
+    +getEstado(): String
+}
+
+ServicioAlquiler --> "1" RecomendacionStrategy : usa
+RecomendacionPorClima --|> RecomendacionStrategy
+RecomendacionPorOcasión --|> RecomendacionStrategy
+Prenda --> "*" Observer : notifica
+@enduml
